@@ -1,88 +1,158 @@
-const jwt = require("jsonwebtoken");
+// ecoproduct-backend/controllers/authController.js
 const User = require("../models/User");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
-function generateToken(userId) {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+const generateToken = (userId) =>
+  jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || "7d",
   });
-}
 
-// POST /api/auth/signup
-async function signup(req, res) {
+const safeUser = (user) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  phone: user.phone || "",
+  location: user.location || "",
+  bio: user.bio || "",
+  avatar: user.avatar || "",
+  // ✅ ADD: include address in response
+  address: user.address || { name: "", phone: "", label: "HOME", line: "" },
+  createdAt: user.createdAt,
+});
+
+// POST /api/auth/register
+const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "Please provide name, email, and password." });
-    }
+    if (!name || !email || !password)
+      return res.status(400).json({ message: "All fields are required." });
 
-    if (password.length < 6) {
+    if (password.length < 6)
       return res.status(400).json({ message: "Password must be at least 6 characters." });
-    }
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const existingUser = await User.findOne({ email: normalizedEmail });
-
-    if (existingUser) {
+    const existing = await User.findOne({ email: email.toLowerCase() });
+    if (existing)
       return res.status(409).json({ message: "An account with this email already exists." });
-    }
 
+    const hashed = await bcrypt.hash(password, 12);
     const user = await User.create({
       name: name.trim(),
-      email: normalizedEmail,
-      password,
+      email: email.toLowerCase().trim(),
+      password: hashed,
     });
 
     const token = generateToken(user._id);
-
-    return res.status(201).json({
-      token,
-      user: { id: user._id, name: user.name, email: user.email },
-    });
-  } catch (error) {
-    console.error("Signup error:", error);
-    return res.status(500).json({ message: "Something went wrong during signup." });
+    res.status(201).json({ token, user: safeUser(user) });
+  } catch (err) {
+    console.error("Register error:", err);
+    res.status(500).json({ message: "Server error during registration." });
   }
-}
+};
 
 // POST /api/auth/login
-async function login(req, res) {
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Please provide email and password." });
-    }
+    if (!email || !password)
+      return res.status(400).json({ message: "Email and password required." });
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const user = await User.findOne({ email: normalizedEmail }).select("+password");
-
-    if (!user) {
+    const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+    if (!user)
       return res.status(401).json({ message: "No account found with this email." });
-    }
 
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
+    const match = await bcrypt.compare(password, user.password);
+    if (!match)
       return res.status(401).json({ message: "Incorrect password." });
-    }
 
     const token = generateToken(user._id);
-
-    return res.status(200).json({
-      token,
-      user: { id: user._id, name: user.name, email: user.email },
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    return res.status(500).json({ message: "Something went wrong during login." });
+    res.json({ token, user: safeUser(user) });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ message: "Server error during login." });
   }
-}
+};
 
-// GET /api/auth/me (protected)
-async function getMe(req, res) {
-  return res.status(200).json({
-    user: { id: req.user._id, name: req.user.name, email: req.user.email },
-  });
-}
+// GET /api/auth/me
+const getMe = async (req, res) => {
+  try {
+    // ✅ FIX: use req.user._id (from updated authMiddleware)
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found." });
+    res.json({ user: safeUser(user) });
+  } catch (err) {
+    res.status(500).json({ message: "Server error." });
+  }
+};
 
-module.exports = { signup, login, getMe };
+// PUT /api/auth/profile
+const updateProfile = async (req, res) => {
+  try {
+    const { name, email, phone, location, bio, avatar, address } = req.body;
+
+    if (email) {
+      const existing = await User.findOne({
+        email: email.toLowerCase(),
+        // ✅ FIX: use req.user._id
+        _id: { $ne: req.user._id },
+      });
+      if (existing)
+        return res.status(409).json({ message: "Email already in use." });
+    }
+
+    const updated = await User.findByIdAndUpdate(
+      // ✅ FIX: use req.user._id
+      req.user._id,
+      {
+        ...(name     && { name: name.trim() }),
+        ...(email    && { email: email.toLowerCase().trim() }),
+        ...(phone    !== undefined && { phone }),
+        ...(location !== undefined && { location }),
+        ...(bio      !== undefined && { bio }),
+        ...(avatar   !== undefined && { avatar }),
+        // ✅ ADD: save address
+        ...(address  !== undefined && { address }),
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) return res.status(404).json({ message: "User not found." });
+    res.json({ user: safeUser(updated) });
+  } catch (err) {
+    console.error("Update profile error:", err);
+    res.status(500).json({ message: "Server error updating profile." });
+  }
+};
+
+// PUT /api/auth/password
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword)
+      return res.status(400).json({ message: "Both passwords are required." });
+
+    if (newPassword.length < 6)
+      return res.status(400).json({ message: "New password must be at least 6 characters." });
+
+    // ✅ FIX: use req.user._id
+    const user = await User.findById(req.user._id).select("+password");
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    const match = await bcrypt.compare(currentPassword, user.password);
+    if (!match)
+      return res.status(401).json({ message: "Current password is incorrect." });
+
+    user.password = await bcrypt.hash(newPassword, 12);
+    await user.save();
+
+    res.json({ message: "Password updated successfully." });
+  } catch (err) {
+    console.error("Change password error:", err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+module.exports = { register, login, getMe, updateProfile, changePassword };

@@ -1,11 +1,13 @@
+// ecoproduct-backend/routes/authRoutes.js
 const express = require("express");
-const { signup, login, getMe } = require("../controllers/authController");
-const { protect } = require("../middleware/authMiddleware");
-
 const router = express.Router();
+const authController = require("../controllers/authController");
+const protect = require("../middleware/authMiddleware");
 
-router.post("/signup", signup);
-router.post("/login", login);
-router.get("/me", protect, getMe);
+router.post("/register", authController.register);
+router.post("/login", authController.login);
+router.get("/me", protect, authController.getMe);
+router.put("/profile", protect, authController.updateProfile);
+router.put("/password", protect, authController.changePassword);
 
 module.exports = router;
