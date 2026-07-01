@@ -25,7 +25,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET /api/products/featured
+
 router.get("/featured", async (req, res) => {
   try {
     const products = await Product.find({ featured: true }).limit(8);
