@@ -3,7 +3,6 @@ const router = express.Router();
 const Product = require("../models/Product");
 const protect = require("../middleware/authMiddleware");
 
-// GET /api/products  — optional ?category=&sort=&search=
 router.get("/", async (req, res) => {
   try {
     const { category, sort, search } = req.query;
