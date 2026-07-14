@@ -21,6 +21,12 @@ app.use(
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  console.log(
+    `[${new Date().toLocaleTimeString()}] ${req.method} ${req.originalUrl}`
+  );
+  next();
+});
 
 // ── ROUTES ── (loaded after middleware)
 const authRoutes = require("./routes/authRoutes");

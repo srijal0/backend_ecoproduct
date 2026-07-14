@@ -68,6 +68,7 @@ const login = async (req, res) => {
       return res.status(401).json({ message: "Incorrect password." });
 
     const token = generateToken(user._id);
+    console.log("Login successful:", user.email);
     res.json({ token, user: safeUser(user) });
   } catch (err) {
     console.error("Login error:", err);
