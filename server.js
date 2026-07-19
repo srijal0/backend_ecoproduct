@@ -4,15 +4,25 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 
-
 dotenv.config();
 
 const app = express();
 
 // ── CORS ──
+const allowedOrigins = process.env.CLIENT_ORIGIN
+  ? process.env.CLIENT_ORIGIN.split(",").map((origin) => origin.trim())
+  : ["http://localhost:3000", "http://localhost:3001"];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN || "http://localhost:3000",
+    origin: function (origin, callback) {
+      // allow requests with no origin (like Postman, curl, or server-to-server)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked for origin: ${origin}`));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -70,7 +80,7 @@ mongoose
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log(`📡 Accepting requests from: ${process.env.CLIENT_ORIGIN || "http://localhost:3000"}`);
+      console.log(`📡 Accepting requests from: ${allowedOrigins.join(", ")}`);
     });
   })
   .catch((err) => {
