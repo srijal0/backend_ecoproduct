@@ -1,4 +1,3 @@
-// ecoproduct-backend/models/User.js
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
@@ -9,7 +8,7 @@ const userSchema = new mongoose.Schema(
     phone:    { type: String, default: "" },
     bio:      { type: String, default: "" },
     avatar:   { type: String, default: "" },
-    // ✅ ADD THIS:
+    role:     { type: String, enum: ["user", "admin"], default: "user" }, // ✅ NEW
     address: {
       name:  { type: String, default: "" },
       phone: { type: String, default: "" },

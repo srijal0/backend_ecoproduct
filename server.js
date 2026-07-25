@@ -45,7 +45,10 @@ const orderRoutes = require("./routes/orderRoutes");
 // Add these lines in server.js
 const path = require("path");
 const uploadRoutes = require("./routes/uploadRoutes");
+const userRoutes = require("./routes/userRoutes"); // ✅ ADD
 
+// ...
+app.use("/api/users", userRoutes); // ✅ ADD (put alongside your other app.use lines)
 // ✅ Serve uploads folder as static files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

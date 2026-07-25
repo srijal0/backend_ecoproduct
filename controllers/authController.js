@@ -16,7 +16,7 @@ const safeUser = (user) => ({
   location: user.location || "",
   bio: user.bio || "",
   avatar: user.avatar || "",
-  // ✅ ADD: include address in response
+  role: user.role || "user",
   address: user.address || { name: "", phone: "", label: "HOME", line: "" },
   createdAt: user.createdAt,
 });
@@ -79,7 +79,6 @@ const login = async (req, res) => {
 // GET /api/auth/me
 const getMe = async (req, res) => {
   try {
-    // ✅ FIX: use req.user._id (from updated authMiddleware)
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found." });
     res.json({ user: safeUser(user) });
@@ -96,7 +95,6 @@ const updateProfile = async (req, res) => {
     if (email) {
       const existing = await User.findOne({
         email: email.toLowerCase(),
-        // ✅ FIX: use req.user._id
         _id: { $ne: req.user._id },
       });
       if (existing)
@@ -104,7 +102,6 @@ const updateProfile = async (req, res) => {
     }
 
     const updated = await User.findByIdAndUpdate(
-      // ✅ FIX: use req.user._id
       req.user._id,
       {
         ...(name     && { name: name.trim() }),
@@ -113,7 +110,6 @@ const updateProfile = async (req, res) => {
         ...(location !== undefined && { location }),
         ...(bio      !== undefined && { bio }),
         ...(avatar   !== undefined && { avatar }),
-        // ✅ ADD: save address
         ...(address  !== undefined && { address }),
       },
       { new: true, runValidators: true }
@@ -138,7 +134,6 @@ const changePassword = async (req, res) => {
     if (newPassword.length < 6)
       return res.status(400).json({ message: "New password must be at least 6 characters." });
 
-    // ✅ FIX: use req.user._id
     const user = await User.findById(req.user._id).select("+password");
     if (!user) return res.status(404).json({ message: "User not found." });
 
