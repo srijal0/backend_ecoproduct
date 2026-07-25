@@ -1,6 +1,6 @@
 # EcoHaven Backend API
 
-The EcoHaven Backend is a RESTful API built with Node.js, Express.js, MongoDB, and JWT Authentication. It provides secure authentication, product management, order management, profile updates, and file upload functionality for the EcoHaven sustainable marketplace.
+The EcoHaven Backend is a RESTful API built with Node.js, Express.js, MongoDB, and JWT Authentication. It provides secure authentication, role-based admin access, product management, order management, profile updates, and file upload functionality for the EcoHaven sustainable marketplace.
 
 ---
 
@@ -8,11 +8,13 @@ The EcoHaven Backend is a RESTful API built with Node.js, Express.js, MongoDB, a
 
 - User Registration
 - User Login (JWT Authentication)
+- Role-Based Access Control (customer / admin)
 - User Profile Management
 - Change Password
-- Product Management
+- Product Management (CRUD)
 - Product Search
-- Order Management
+- Order Management & Status Tracking
+- Admin Dashboard Endpoints (products, orders, users)
 - Image Upload (Multer)
 - MongoDB Database
 - Protected API Routes
@@ -42,6 +44,8 @@ ecoproduct-backend/
 ├── config/
 ├── controllers/
 ├── middleware/
+│   ├── authMiddleware.js
+│   └── adminMiddleware.js
 ├── models/
 ├── routes/
 ├── uploads/
@@ -90,6 +94,8 @@ JWT_EXPIRES_IN=7d
 CLIENT_ORIGIN=http://localhost:3000
 ```
 
+> **Note:** `.env` is gitignored and should never be committed. Rotate `MONGO_URI` credentials and `JWT_SECRET` if they are ever accidentally exposed.
+
 ---
 
 ## Running the Server
@@ -118,39 +124,54 @@ http://localhost:5000
 
 ### Authentication
 
-| Method | Endpoint | Description |
-|---------|----------|-------------|
-| POST | /api/auth/register | Register User |
-| POST | /api/auth/login | Login User |
-| GET | /api/auth/me | Current User |
-| PUT | /api/auth/profile | Update Profile |
-| PUT | /api/auth/password | Change Password |
+| Method | Endpoint | Description | Access |
+|---------|----------|-------------|--------|
+| POST | /api/auth/register | Register User | Public |
+| POST | /api/auth/login | Login User | Public |
+| GET | /api/auth/me | Current User | Protected |
+| PUT | /api/auth/profile | Update Profile | Protected |
+| PUT | /api/auth/password | Change Password | Protected |
 
 ---
 
 ### Products
 
-| Method | Endpoint |
-|---------|----------|
-| GET | /api/products |
-| GET | /api/products/:id |
+| Method | Endpoint | Description | Access |
+|---------|----------|-------------|--------|
+| GET | /api/products | List / search products | Public |
+| GET | /api/products/featured | Featured products | Public |
+| GET | /api/products/:id | Product details | Public |
+| POST | /api/products | Create product | Admin only |
+| PUT | /api/products/:id | Update product | Admin only |
+| DELETE | /api/products/:id | Delete product | Admin only |
 
 ---
 
 ### Orders
 
-| Method | Endpoint |
-|---------|----------|
-| POST | /api/orders |
-| GET | /api/orders/my |
+| Method | Endpoint | Description | Access |
+|---------|----------|-------------|--------|
+| POST | /api/orders | Create order | Protected |
+| GET | /api/orders/my | Get logged-in user's orders | Protected |
+| GET | /api/orders | Get all orders | Admin only |
+| PUT | /api/orders/:id/status | Update order status | Admin only |
+
+---
+
+### Users
+
+| Method | Endpoint | Description | Access |
+|---------|----------|-------------|--------|
+| GET | /api/users | List all users | Admin only |
+| PUT | /api/users/:id/role | Promote/demote user role | Admin only |
 
 ---
 
 ### Upload
 
-| Method | Endpoint |
-|---------|----------|
-| POST | /api/upload/avatar |
+| Method | Endpoint | Description | Access |
+|---------|----------|-------------|--------|
+| POST | /api/upload/avatar | Upload avatar image | Protected |
 
 ---
 
@@ -161,6 +182,8 @@ Protected routes require a JWT token.
 ```
 Authorization: Bearer <your_token>
 ```
+
+Admin-only routes additionally require the authenticated user's document to have `role: "admin"` set in MongoDB. New users default to `role: "user"`.
 
 ---
 
