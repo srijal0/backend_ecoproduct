@@ -1,34 +1,16 @@
-# EcoHaven Backend API
+# 🌿 EcoHaven Backend API
 
-The EcoHaven Backend is a RESTful API built with Node.js, Express.js, MongoDB, and JWT Authentication. It provides secure authentication, role-based admin access, product management, order management, profile updates, and file upload functionality for the EcoHaven sustainable marketplace.
-
----
-
-## Features
-
-- User Registration
-- User Login (JWT Authentication)
-- Role-Based Access Control (customer / admin)
-- User Profile Management
-- Change Password
-- Product Management (CRUD)
-- Product Search
-- Order Management & Status Tracking
-- Admin Dashboard Endpoints (products, orders, users)
-- Image Upload (Multer)
-- MongoDB Database
-- Protected API Routes
-- REST API Architecture
+A RESTful backend API for the **EcoHaven** sustainable marketplace. Built with **Node.js**, **Express.js**, **MongoDB**, and **JWT Authentication**, the API powers user authentication, product management, order processing, and role-based admin functionality.
 
 ---
 
-## Technologies Used
+## 🛠️ Tech Stack
 
 - Node.js
 - Express.js
 - MongoDB
 - Mongoose
-- JWT (JSON Web Token)
+- JWT Authentication
 - bcryptjs
 - Multer
 - dotenv
@@ -36,10 +18,45 @@ The EcoHaven Backend is a RESTful API built with Node.js, Express.js, MongoDB, a
 
 ---
 
-## Project Structure
+## ✨ Features
+
+### 👤 Authentication
+- User Registration
+- User Login (JWT Authentication)
+- Protected Routes
+- User Profile Management
+- Change Password
+
+### 🛍️ Products
+- Product Listing
+- Product Search
+- Product Details
+- Create Product (Admin)
+- Update Product (Admin)
+- Delete Product (Admin)
+
+### 📦 Orders
+- Place Orders
+- View Order History
+- Order Status Tracking
+- Admin Order Management
+
+### 👨‍💼 Admin Features
+- Role-Based Access Control
+- User Management
+- Product Management
+- Order Management
+
+### 📁 File Uploads
+- Product Image Upload
+- User Avatar Upload
+
+---
+
+# 📁 Project Structure
 
 ```
-ecoproduct-backend/
+backend_ecoproduct/
 │
 ├── config/
 ├── controllers/
@@ -49,25 +66,34 @@ ecoproduct-backend/
 ├── models/
 ├── routes/
 ├── uploads/
-├── .env
+├── .env.example
 ├── server.js
-└── package.json
+├── package.json
+└── README.md
 ```
 
 ---
+
+# 🚀 Getting Started
+
+## Prerequisites
+
+- Node.js 18+
+- MongoDB
+- npm
 
 ## Installation
 
 Clone the repository
 
 ```bash
-git clone https://github.com/srijal0/security_backend.git
+git clone https://github.com/srijal0/backend_ecoproduct.git
 ```
 
 Move into the project
 
 ```bash
-cd security_backend
+cd backend_ecoproduct
 ```
 
 Install dependencies
@@ -76,9 +102,17 @@ Install dependencies
 npm install
 ```
 
+Create an environment file
+
+```bash
+cp .env.example .env
+```
+
+Configure your environment variables.
+
 ---
 
-## Environment Variables
+# 🔧 Environment Variables
 
 Create a `.env` file in the project root.
 
@@ -94,11 +128,11 @@ JWT_EXPIRES_IN=7d
 CLIENT_ORIGIN=http://localhost:3000
 ```
 
-> **Note:** `.env` is gitignored and should never be committed. Rotate `MONGO_URI` credentials and `JWT_SECRET` if they are ever accidentally exposed.
+> **Note:** Never commit your `.env` file to GitHub.
 
 ---
 
-## Running the Server
+# ▶️ Running the Server
 
 Development
 
@@ -112,7 +146,7 @@ Production
 npm start
 ```
 
-Server runs on
+Backend API
 
 ```
 http://localhost:5000
@@ -120,77 +154,114 @@ http://localhost:5000
 
 ---
 
-## API Endpoints
-
-### Authentication
-
-| Method | Endpoint | Description | Access |
-|---------|----------|-------------|--------|
-| POST | /api/auth/register | Register User | Public |
-| POST | /api/auth/login | Login User | Public |
-| GET | /api/auth/me | Current User | Protected |
-| PUT | /api/auth/profile | Update Profile | Protected |
-| PUT | /api/auth/password | Change Password | Protected |
-
----
-
-### Products
-
-| Method | Endpoint | Description | Access |
-|---------|----------|-------------|--------|
-| GET | /api/products | List / search products | Public |
-| GET | /api/products/featured | Featured products | Public |
-| GET | /api/products/:id | Product details | Public |
-| POST | /api/products | Create product | Admin only |
-| PUT | /api/products/:id | Update product | Admin only |
-| DELETE | /api/products/:id | Delete product | Admin only |
-
----
-
-### Orders
-
-| Method | Endpoint | Description | Access |
-|---------|----------|-------------|--------|
-| POST | /api/orders | Create order | Protected |
-| GET | /api/orders/my | Get logged-in user's orders | Protected |
-| GET | /api/orders | Get all orders | Admin only |
-| PUT | /api/orders/:id/status | Update order status | Admin only |
-
----
-
-### Users
-
-| Method | Endpoint | Description | Access |
-|---------|----------|-------------|--------|
-| GET | /api/users | List all users | Admin only |
-| PUT | /api/users/:id/role | Promote/demote user role | Admin only |
-
----
-
-### Upload
-
-| Method | Endpoint | Description | Access |
-|---------|----------|-------------|--------|
-| POST | /api/upload/avatar | Upload avatar image | Protected |
-
----
+# 📚 API Endpoints
 
 ## Authentication
 
-Protected routes require a JWT token.
+| Method | Endpoint | Access |
+|---------|----------|--------|
+| POST | /api/auth/register | Public |
+| POST | /api/auth/login | Public |
+| GET | /api/auth/me | Protected |
+| PUT | /api/auth/profile | Protected |
+| PUT | /api/auth/password | Protected |
+
+---
+
+## Products
+
+| Method | Endpoint | Access |
+|---------|----------|--------|
+| GET | /api/products | Public |
+| GET | /api/products/featured | Public |
+| GET | /api/products/:id | Public |
+| POST | /api/products | Admin |
+| PUT | /api/products/:id | Admin |
+| DELETE | /api/products/:id | Admin |
+
+---
+
+## Orders
+
+| Method | Endpoint | Access |
+|---------|----------|--------|
+| POST | /api/orders | Protected |
+| GET | /api/orders/my | Protected |
+| GET | /api/orders | Admin |
+| PUT | /api/orders/:id/status | Admin |
+
+---
+
+## Users
+
+| Method | Endpoint | Access |
+|---------|----------|--------|
+| GET | /api/users | Admin |
+| PUT | /api/users/:id/role | Admin |
+
+---
+
+## Upload
+
+| Method | Endpoint | Access |
+|---------|----------|--------|
+| POST | /api/upload/avatar | Protected |
+
+---
+
+# 🔒 Authentication
+
+Protected endpoints require a valid JWT token.
 
 ```
 Authorization: Bearer <your_token>
 ```
 
-Admin-only routes additionally require the authenticated user's document to have `role: "admin"` set in MongoDB. New users default to `role: "user"`.
+Admin routes require the authenticated user to have:
+
+```
+role: "admin"
+```
 
 ---
 
-## Author
+# 🗄️ Database
+
+EcoHaven uses **MongoDB** with **Mongoose ODM**.
+
+Main collections include:
+
+- Users
+- Products
+- Orders
+
+---
+
+# 🚀 Future Improvements
+
+- Online payment gateway integration
+- Email notifications
+- Product reviews and ratings
+- Discount coupons
+- Analytics dashboard
+- Cloud image storage
+
+---
+
+# 👨‍💻 Developer
 
 **Shreejal Shrestha**
 
 BSc (Hons) Computing
 
 Softwarica College of IT & E-Commerce
+
+---
+
+# 📄 License
+
+Copyright (c) 2026 Shreejal Shrestha
+
+This project was created for educational purposes as part of a final-year college project. All rights reserved by the author.
+
+Not intended for commercial redistribution without permission.
