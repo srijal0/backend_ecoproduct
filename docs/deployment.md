@@ -1,19 +1,34 @@
 # Deployment Guide
 
-## Backend
+## Prerequisites
 
-Install dependencies
+- Node.js
+- MongoDB
 
+## Installation
+
+```bash
 npm install
+```
 
-Run server
+## Configure Environment
 
+Create a `.env` file using `.env.example`.
+
+## Start Server
+
+Development
+
+```bash
+npm run dev
+```
+
+Production
+
+```bash
 npm start
+```
 
-Environment variables
+The server runs on:
 
-PORT
-
-MONGO_URI
-
-JWT_SECRET
+http://localhost:5000
